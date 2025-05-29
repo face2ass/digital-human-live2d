@@ -1,0 +1,49 @@
+{
+	"Version": 3,
+	"FileReferences": {
+		"Moc": "mark_free_t04.moc3",
+		"Textures": [
+			"mark_free_t04.2048/texture_00.png"
+		],
+		"Physics": "mark_free_t04.physics3.json",
+		"DisplayInfo": "mark_free_t04.cdi3.json",
+		"Motions": {
+			"Idle": [
+				{
+					"File": "motions/mark_m01.motion3.json",
+					"Sound": "sounds/jp_voice-1.wav"
+				}
+			],
+			"TapBody": [
+				{
+					"File": "motions/dance.motion3.json"
+				}
+			]
+		}
+	},
+	"Groups": [
+		{
+			"Target": "Parameter",
+			"Name": "EyeBlink",
+			"Ids": [
+				"ParamEyeLOpen",
+				"ParamEyeROpen"
+			]
+		},
+		{
+			"Target": "Parameter",
+			"Name": "LipSync",
+			"Ids": []
+		}
+	],
+	"HitAreas": [
+		{
+			"Id": "HitArea_Head",
+			"Name": "Head"
+		},
+		{
+			"Id": "HitArea_Body",
+			"Name": "Body"
+		}
+	]
+}

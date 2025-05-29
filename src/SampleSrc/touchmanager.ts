@@ -1,0 +1,184 @@
+/**
+ * Copyright(c) Live2D Inc. 保留所有权利。
+ *
+ * 使用本源代码受 Live2D 开放软件许可协议的约束，
+ * 该协议可在 https://www.live2d.com/eula/live2d-open-software-license-agreement_en.html 找到。
+ */
+
+export class TouchManager {
+  /**
+   * 构造函数
+   */
+  constructor() {
+    this._startX = 0.0;
+    this._startY = 0.0;
+    this._lastX = 0.0;
+    this._lastY = 0.0;
+    this._lastX1 = 0.0;
+    this._lastY1 = 0.0;
+    this._lastX2 = 0.0;
+    this._lastY2 = 0.0;
+    this._lastTouchDistance = 0.0;
+    this._deltaX = 0.0;
+    this._deltaY = 0.0;
+    this._scale = 1.0;
+    this._touchSingle = false;
+    this._flipAvailable = false;
+  }
+
+  public getCenterX(): number {
+    return this._lastX;
+  }
+
+  public getCenterY(): number {
+    return this._lastY;
+  }
+
+  public getDeltaX(): number {
+    return this._deltaX;
+  }
+
+  public getDeltaY(): number {
+    return this._deltaY;
+  }
+
+  public getStartX(): number {
+    return this._startX;
+  }
+
+  public getStartY(): number {
+    return this._startY;
+  }
+
+  public getScale(): number {
+    return this._scale;
+  }
+
+  public getX(): number {
+    return this._lastX;
+  }
+
+  public getY(): number {
+    return this._lastY;
+  }
+
+  public getX1(): number {
+    return this._lastX1;
+  }
+
+  public getY1(): number {
+    return this._lastY1;
+  }
+
+  public getX2(): number {
+    return this._lastX2;
+  }
+
+  public getY2(): number {
+    return this._lastY2;
+  }
+
+  public isSingleTouch(): boolean {
+    return this._touchSingle;
+  }
+
+  public isFlickAvailable(): boolean {
+    return this._flipAvailable;
+  }
+
+  public disableFlick(): void {
+    this._flipAvailable = false;
+  }
+
+  /**
+   * 触摸开始时事件
+   * @param deviceX 触摸屏幕的 x 坐标值
+   * @param deviceY 触摸屏幕的 y 坐标值
+   */
+  public touchesBegan(deviceX: number, deviceY: number): void {
+    this._lastX = deviceX;
+    this._lastY = deviceY;
+    this._startX = deviceX;
+    this._startY = deviceY;
+    this._lastTouchDistance = -1.0;
+    this._flipAvailable = true;
+    this._touchSingle = true;
+  }
+
+  /**
+   * 拖动时的事件
+   * @param deviceX 触摸屏幕的 x 坐标值
+   * @param deviceY 触摸屏幕的 y 坐标值
+   */
+  public touchesMoved(deviceX: number, deviceY: number): void {
+    this._lastX = deviceX;
+    this._lastY = deviceY;
+    this._lastTouchDistance = -1.0;
+    this._touchSingle = true;
+  }
+
+  /**
+   * 测量滑动距离
+   * @return 滑动距离
+   */
+  public getFlickDistance(): number {
+    return this.calculateDistance(
+      this._startX,
+      this._startY,
+      this._lastX,
+      this._lastY
+    );
+  }
+
+  /**
+   * 计算点 1 到点 2 的距离
+   *
+   * @param x1 第一个触摸点的屏幕 x 坐标值
+   * @param y1 第一个触摸点的屏幕 y 坐标值
+   * @param x2 第二个触摸点的屏幕 x 坐标值
+   * @param y2 第二个触摸点的屏幕 y 坐标值
+   */
+  public calculateDistance(
+    x1: number,
+    y1: number,
+    x2: number,
+    y2: number
+  ): number {
+    return Math.sqrt((x1 - x2) * (x1 - x2) + (y1 - y2) * (y1 - y2));
+  }
+
+  /**
+   * 从两个值中计算移动量。
+   * 若方向不同，则移动量为 0。若方向相同，则参考绝对值较小的值。
+   * @param v1 第一个移动量
+   * @param v2 第二个移动量
+   * @return 较小的移动量
+   */
+  public calculateMovingAmount(v1: number, v2: number): number {
+    if (v1 > 0.0 != v2 > 0.0) {
+      return 0.0;
+    }
+
+    const sign: number = v1 > 0.0 ? 1.0 : -1.0;
+    const absoluteValue1 = Math.abs(v1);
+    const absoluteValue2 = Math.abs(v2);
+    return (
+      sign * (absoluteValue1 < absoluteValue2 ? absoluteValue1 : absoluteValue2)
+    );
+  }
+
+  _startY: number; // 触摸开始时的 y 坐标值
+  _startX: number; // 触摸开始时的 x 坐标值
+  _lastX: number; // 单指触摸时的 x 坐标值
+  _lastY: number; // 单指触摸时的 y 坐标值
+  _lastX1: number; // 双指触摸时第一个点的 x 坐标值
+  _lastY1: number; // 双指触摸时第一个点的 y 坐标值
+  _lastX2: number; // 双指触摸时第二个点的 x 坐标值
+  _lastY2: number; // 双指触摸时第二个点的 y 坐标值
+  _lastTouchDistance: number; // 双指及以上触摸时手指间的距离
+  _deltaX: number; // 上一帧到当前帧 x 方向的移动距离
+  _deltaY: number; // 上一帧到当前帧 y 方向的移动距离
+  _scale: number; // 本帧的缩放倍率。非缩放操作时为 1
+  _touchSingle: boolean; // 单指触摸时为 true
+  _flipAvailable: boolean; // 滑动操作是否有效
+}

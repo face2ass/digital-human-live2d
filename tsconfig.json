@@ -1,0 +1,39 @@
+{
+  "extends": "@vue/tsconfig/tsconfig.dom.json",
+  "compilerOptions": {
+    "target": "es6",
+    "types": ["node"],
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "experimentalDecorators": true,
+    "forceConsistentCasingInFileNames": true,
+    "outDir": "./dist",
+    "removeComments": true,
+    "sourceMap": true,
+    "baseUrl": "./",
+    "paths": {
+      "@/*": [
+        "src/*"
+      ],
+      "@framework/*": [
+        "src/FrameworkSrc/*"
+      ],
+      "@motionsyncframework/*": [
+        "src/MotionSyncFrameworkSrc/*"
+      ]
+    },
+    "noImplicitAny": true,
+    "useUnknownInCatchVariables": true
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "src/**/*.vue",
+    "./public/Core/*.ts",
+    "src/lappaudioworkletprocessor.js"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}
