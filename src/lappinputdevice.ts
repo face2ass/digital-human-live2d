@@ -164,14 +164,14 @@ export class LAppInputDevice implements ILAppAudioBufferProvider {
         new MediaStream([tracks[0]])
       );
       await this._context.audioWorklet.addModule(
-        './src/lappaudioworkletprocessor.js'
+        './lappaudioworkletprocessor.js'
       );
       const audioWorkletNode = new AudioWorkletNode(
         this._context,
         'lappaudioworkletprocessor'
       );
       this._source.connect(audioWorkletNode);
-      audioWorkletNode.connect(this._context.destination);
+      audioWorkletNode.connect(this._context.destination); // 连接至音频输出设备
       audioWorkletNode.port.onmessage = this.onMessage.bind(this);
 
       this._isInitialized = true;
@@ -205,7 +205,7 @@ export class LAppInputDevice implements ILAppAudioBufferProvider {
 
     // 从 WorkletProcessor 模块获取数据
     if (data.eventType === 'data' && data.audioBuffer) {
-      console.log('■onMessage', data.audioBuffer.length)
+      console.log('■音频片段处理', data.audioBuffer.length)
       for (let i = 0; i < data.audioBuffer.length; i++) {
         this._buffer.addLast(data.audioBuffer[i]);
       }
@@ -262,6 +262,8 @@ export class TTSAudioBufferProvider implements ILAppAudioBufferProvider {
   private _currentSessionId: string | null = null;
   private _sessionCounter: number = 0;
 
+  private _userInteracted: boolean = false;
+
   public static getInstance(): TTSAudioBufferProvider {
     if (!TTSAudioBufferProvider._instance) {
       TTSAudioBufferProvider._instance = new TTSAudioBufferProvider();
@@ -279,12 +281,38 @@ export class TTSAudioBufferProvider implements ILAppAudioBufferProvider {
   public async initialize(): Promise<boolean> {
     if (this.isInitialized()) return true;
 
+    // 等待用户交互
+    if (!this._userInteracted) {
+      console.log('等待用户交互...');
+      await new Promise<void>((resolve) => {
+        const handler = () => {
+          console.log('用户交互检测到');
+          document.removeEventListener('click', handler);
+          document.removeEventListener('touchstart', handler);
+          document.removeEventListener('keydown', handler);
+          this._userInteracted = true;
+          resolve();
+        };
+
+        document.addEventListener('click', handler);
+        document.addEventListener('touchstart', handler);
+        document.addEventListener('keydown', handler);
+      });
+    }
+
     try {
       this._context = new (window.AudioContext || (window as any).webkitAudioContext)();
 
+      // 恢复上下文状态
+      if (this._context.state === 'suspended') {
+        console.log('尝试恢复音频上下文...');
+        await this._context.resume();
+        console.log('音频上下文已恢复');
+      }
+
       // 加载AudioWorklet处理器
       await this._context.audioWorklet.addModule(
-        './src/lappaudioworkletprocessor.js' // 使用与麦克风相同的处理器
+        './lappaudioworkletprocessor.js' // 使用与麦克风相同的处理器
       );
 
       // 初始化缓冲区（与麦克风实现保持一致）
@@ -301,7 +329,7 @@ export class TTSAudioBufferProvider implements ILAppAudioBufferProvider {
     }
   }
 
-  private createSilentAudio(duration: number = 0.2): string {
+  public createSilentAudio(duration: number = 0.2): string {
     // 创建一个短暂的静音音频（200ms）
     const sampleRate = 44100; // 采样率
     const channels = 1; // 单声道
@@ -468,7 +496,7 @@ export class TTSAudioBufferProvider implements ILAppAudioBufferProvider {
 
       // 连接节点
       this._source.connect(this._workletNode);
-      this._workletNode.connect(this._context.destination);
+      this._workletNode.connect(this._context.destination); // 连接至音频输出设备
 
     } catch (error) {
       console.error(`播放索引${index}的音频失败:`, error);
@@ -484,6 +512,17 @@ export class TTSAudioBufferProvider implements ILAppAudioBufferProvider {
    * @param sessionId 会话ID
    */
   private async createVirtualMediaStream(audioBlob: Blob, sessionId: string): Promise<MediaStream> {
+    // 确保上下文处于运行状态
+    if (this._context.state === 'suspended') {
+      console.log('尝试恢复音频上下文...');
+      try {
+        await this._context.resume();
+        console.log('音频上下文已恢复');
+      } catch (error) {
+        console.error('恢复音频上下文失败:', error);
+      }
+    }
+
     // 创建音频元素
     const audioElement = new Audio();
     audioElement.src = URL.createObjectURL(audioBlob);
@@ -519,6 +558,7 @@ export class TTSAudioBufferProvider implements ILAppAudioBufferProvider {
 
       // 静音结束后才真正结束
       silentElement.onended = () => {
+        console.log('■播放结束:', currentSessionId, this._currentPlayingIndex)
         // 再次检查会话
         if (!this._isCurrentSession(currentSessionId)) {
           console.log(`静音结尾播放中止（会话已过期）`);
@@ -530,15 +570,15 @@ export class TTSAudioBufferProvider implements ILAppAudioBufferProvider {
         this._nextExpectedIndex = this._currentPlayingIndex + 1;
         this.stopPlayback();
         this._playNextIfPossible();
-        // 检查是否播放到了最后一个音频
-        // if (this._currentPlayingIndex === this._endIndex) {
-        //   console.log('■播放完成');
-        //   this.release()
-        // }
       };
+    };// 监听播放错误
+    audioElement.onerror = (event) => {
+      console.error('音频播放错误:', event);
     };
 
+    console.log('■开始播放音频片段:', this._currentPlayingIndex)
     await audioElement.play();
+    console.log('■播放成功:', mediaStreamDestination)
     return mediaStreamDestination.stream;
   }
 
@@ -551,7 +591,7 @@ export class TTSAudioBufferProvider implements ILAppAudioBufferProvider {
     const data: LAppResponseObject = e.data;
 
     if (data.eventType === 'data' && data.audioBuffer) {
-      console.log('■onMessage', data.audioBuffer.length)
+      console.log('■音频片段处理', data.audioBuffer.length)
       for (let i = 0; i < data.audioBuffer.length; i++) {
         this._buffer.addLast(data.audioBuffer[i]);
       }

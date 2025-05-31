@@ -1,10 +1,13 @@
 <template>
   <header class="page-header">
-    <div class="tab-list">
-      <div class="tab gallery" @click="showModal = true">画廊</div>
-      <div class="tab settings">设置</div>
-    </div>
+    <!--<div class="tab-list">-->
+    <!--  <div class="tab gallery" @click="showModal = true">画廊</div>-->
+    <!--  <div class="tab settings">设置</div>-->
+    <!--</div>-->
   </header>
+  <button id="enable-audio" style="position: fixed; top: 10px; left: 50%; z-index: 1000;" @click="enableAudio">
+    启用音频
+  </button>
   <ModalGallery
     v-model="showModal"
     :items="galleryItems"
@@ -29,6 +32,7 @@ import {onMounted, onUnmounted} from "vue";
 import {ref} from 'vue'
 import ModalGallery from './ModalGallery.vue'
 import ChatBox from './ChatBox.vue'
+import {TTSAudioBufferProvider} from "@/lappinputdevice.ts";
 
 const showModal = ref(false)
 const galleryItems = ref({
@@ -44,6 +48,16 @@ const galleryItems = ref({
 
 const handleConfirm = ({type, item}) => {
   console.log('选中的内容:', type, item)
+}
+
+const enableAudio = async () => {
+  const ttsProvider = TTSAudioBufferProvider.getInstance();
+  await ttsProvider.initialize();
+  // 触发一次虚拟播放以解除浏览器限制
+  const silentAudio = ttsProvider.createSilentAudio(0.1);
+  const silentElement = new Audio(silentAudio);
+  await silentElement.play();
+  console.log('音频功能已启用');
 }
 
 onMounted(() => {

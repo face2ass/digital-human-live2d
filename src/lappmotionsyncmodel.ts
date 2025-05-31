@@ -739,11 +739,7 @@ export class LAppMotionSyncModel extends CubismUserModel {
     const audioDeltaTime = performance.now() / 1000.0; // 转换为秒
 
     // 设置声音缓冲区
-    this._motionSync.setSoundBuffer(
-      0,
-      this._audioBufferProvider.getBuffer(),
-      0
-    );
+    this._motionSync.setSoundBuffer(0, this._audioBufferProvider.getBuffer(), 0);
 
     // 更新动作同步
     this._motionSync.updateParameters(this._model, audioDeltaTime);

@@ -12,6 +12,7 @@ export default defineConfig((env: ConfigEnv): UserConfig => {
       vue()
     ],
     server: {
+      host: '0.0.0.0',
       port: 5000,
       proxy: {
         '/api': {
@@ -20,6 +21,10 @@ export default defineConfig((env: ConfigEnv): UserConfig => {
           rewrite: (path) => path.replace(/^\/api/, ''),
         },
       },
+    },
+    preview: {
+      // https: true,
+      port: 5000
     },
     root: './',
     base: '/',

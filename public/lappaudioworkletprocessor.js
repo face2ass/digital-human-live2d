@@ -38,6 +38,7 @@ class LAppAudioWorkletProcessor extends AudioWorkletProcessor {
         outputChannel[i] = inputChannel[i];
       }
     }
+
     return true;
   }
 }

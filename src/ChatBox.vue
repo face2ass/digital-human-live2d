@@ -82,15 +82,16 @@ onMounted(() => {
   top: 40px;
   left: 0;
   bottom: 0;
-  width: 100%;
+  width: 350px;
   display: flex;
   flex-direction: column;
   pointer-events: none;
+  background-color: rgba(255, 255, 255, 0.3);
 
   > .messages-wrapper {
     flex: 1;
     overflow-y: auto;
-    padding: 20px;
+    padding: 0 10px;
     display: flex;
     flex-direction: column;
     gap: 15px;
@@ -119,6 +120,7 @@ onMounted(() => {
       position: relative;
       align-self: flex-start;
       box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+      pointer-events: none;
 
       &.own-message {
         align-self: flex-end;
@@ -127,14 +129,16 @@ onMounted(() => {
       }
 
       > .message-content {
+        font-size: 14px;
         word-break: break-word;
-        line-height: 1.5;
+        line-height: 20px;
       }
 
       > .message-time {
         font-size: 12px;
         color: rgba(255, 255, 255, 0.7);
         margin-top: 4px;
+        margin-bottom: -10px;
         text-align: right;
       }
 

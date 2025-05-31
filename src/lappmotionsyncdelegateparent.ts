@@ -205,7 +205,6 @@ export abstract class LAppMotionSyncDelegateParent {
   private initializeEventListener(): void {
     const supportTouch: boolean = 'touchcancel' in document;
     const ele = this._canvases.at(0) // TODO LAppDefine.CanvasNum是1
-    console.log('■ele:', ele)
     if (supportTouch) {
       this.pointBeganEventListener = this.onTouchBegan.bind(this);
       this.pointMovedEventListener = this.onTouchMoved.bind(this);
